@@ -18,7 +18,8 @@ class Solver
 
   def call(env)
     params = JSON.parse(env["rack.input"].read)
-    Thread.new(params) { resolve(params) }
+    # Thread.new(params) { resolve(params) }
+    resolve(params)
     [200, {'Content-Type' => 'application/json'}, StringIO.new("Hello World!\n")]
   end
 
