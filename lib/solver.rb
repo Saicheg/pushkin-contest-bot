@@ -60,12 +60,15 @@ class Solver
   def send_answer(answer, task_id)
     retryable(tries: 3) do
       uri = URI("http://pushkin-contest.ror.by/quiz")
-
       data = { answer: answer, token: TOKEN, task_id: task_id}
-      options = {content_type: :json, accept: :json}
+      Net::HTTP.post_form(uri, data)
 
-      response = RestClient.post uri.to_s, data.to_json, options
-      raise if response.code.to_i != 200
+      # uri = URI("http://pushkin-contest.ror.by/quiz")
+
+      # options = {content_type: :json, accept: :json}
+
+      # response = RestClient.post uri.to_s, data.to_json, options
+      # raise if response.code.to_i != 200
     end
   end
 
