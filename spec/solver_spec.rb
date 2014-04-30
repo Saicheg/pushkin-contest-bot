@@ -25,6 +25,11 @@ describe Solver do
       subject.level_2(question).should == 'славным'
     end
 
+    it 'should solve it' do
+      question  = 'Ты приближаешься к %WORD% поре'
+      subject.level_2(question).should == 'сомнительной'
+    end
+
   end
 
   describe 'level 3' do

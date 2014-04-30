@@ -1,5 +1,4 @@
 require 'json'
-# require 'rest_client'
 require 'logger'
 require 'retryable'
 
@@ -11,18 +10,16 @@ class Solver
   ADDR=URI("http://pushkin-contest.ror.by/")
 
   def initialize
-    @poems = JSON.parse(File.read(File.expand_path('../../db/poems.json', __FILE__)))
-    @poem_lines = @poems.values.flatten.map{|line| strip_punctuation(line) }
-    @poem_string = @poems.values.flatten.map{|line| strip_punctuation(line) }.join(LINE)
+    @poems = JSON.parse(File.read(File.expand_path('../../db/poems-full.json', __FILE__)))
+    @poem_lines = @poems.map {|name, lines| lines }.flatten.map{|line| strip_punctuation(line) }
+    @poem_string = @poems.map {|name, lines| lines }.flatten.map{|line| strip_punctuation(line) }.join(LINE)
     @poem_names = Hash[@poems.flat_map {|name, lines| lines.map {|line| [strip_punctuation(line), name]  }}]
     @http = Net::HTTP.new(ADDR.host)
     @http.set_debug_output $stdout
-    # RestClient.log = Logger.new($stdout)
   end
 
   def call(env)
     params = JSON.parse(env["rack.input"].read)
-    # Thread.new(params) { resolve(params) }
     resolve(params)
     [200, {'Content-Type' => 'application/json'}, StringIO.new("Hello World!\n")]
   end
@@ -38,12 +35,7 @@ class Solver
 
   def level_2(question)
     regexp = Regexp.new(strip_punctuation(question).gsub("%WORD%","([#{WORD}]+)"))
-    answer = regexp.match(@poem_string)[1] rescue nil
-    if answer.nil?
-      @poem_lines.find { |line| line =~ regexp }
-      answer = $1
-    end
-    answer
+    regexp.match(@poem_string)[1] rescue nil
   end
 
   def level_3(question)
