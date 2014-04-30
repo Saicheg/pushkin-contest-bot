@@ -1,5 +1,5 @@
 require 'json'
-require 'rest_client'
+# require 'rest_client'
 require 'logger'
 require 'retryable'
 
@@ -14,7 +14,9 @@ class Solver
     @poem_lines = @poems.values.flatten.map{|line| strip_punctuation(line) }
     @poem_string = @poems.values.flatten.map{|line| strip_punctuation(line) }.join(LINE)
     @poem_names = Hash[@poems.flat_map {|name, lines| lines.map {|line| [strip_punctuation(line), name]  }}]
-    RestClient.log = Logger.new($stdout)
+    @http = Net::HTTP.new
+    @http.set_debug_output $stdout
+    # RestClient.log = Logger.new($stdout)
   end
 
   def call(env)
@@ -61,14 +63,8 @@ class Solver
     retryable(tries: 3) do
       uri = URI("http://pushkin-contest.ror.by/quiz")
       data = { answer: answer, token: TOKEN, task_id: task_id}
-      Net::HTTP.post_form(uri, data)
-
-      # uri = URI("http://pushkin-contest.ror.by/quiz")
-
-      # options = {content_type: :json, accept: :json}
-
-      # response = RestClient.post uri.to_s, data.to_json, options
-      # raise if response.code.to_i != 200
+      @http.post(uri, data)
+      # Net::HTTP.post_form(uri, data)
     end
   end
 
