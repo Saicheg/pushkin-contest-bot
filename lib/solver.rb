@@ -8,14 +8,14 @@ class Solver
   TOKEN='3e81fe7c2ae2be50eb7b034ebb637c10'
   WORD="А-Яа-яЁё0-9"
   LINE="%LINE%"
-  URI=URI("http://pushkin-contest.ror.by/quiz")
+  ADDR=URI("http://pushkin-contest.ror.by/")
 
   def initialize
     @poems = JSON.parse(File.read(File.expand_path('../../db/poems.json', __FILE__)))
     @poem_lines = @poems.values.flatten.map{|line| strip_punctuation(line) }
     @poem_string = @poems.values.flatten.map{|line| strip_punctuation(line) }.join(LINE)
     @poem_names = Hash[@poems.flat_map {|name, lines| lines.map {|line| [strip_punctuation(line), name]  }}]
-    @http = Net::HTTP.new(URI)
+    @http = Net::HTTP.new(ADDR.host)
     @http.set_debug_output $stdout
     # RestClient.log = Logger.new($stdout)
   end
@@ -63,8 +63,7 @@ class Solver
   def send_answer(answer, task_id)
     retryable(tries: 3) do
       data = { answer: answer, token: TOKEN, task_id: task_id}
-      @http.post(uri, data)
-      # Net::HTTP.post_form(uri, data)
+      @http.post('/quiz', data)
     end
   end
 
