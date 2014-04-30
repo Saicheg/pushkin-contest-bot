@@ -22,4 +22,23 @@ describe Solver do
 
   end
 
+  describe 'level 3' do
+
+    it 'should solve it' do
+      question = "Сребрит мороз %WORD% поле,\nПроглянет день %WORD% будто поневоле"
+      subject.level_3(question).should == 'увянувшее,как'
+    end
+
+  end
+
+  describe 'level 4' do
+
+    it 'should solve it' do
+      question = "Сребрит мороз %WORD% поле,\nПроглянет день %WORD% будто поневоле\nИ скроется за край %WORD% гор."
+      subject.level_4(question).should == 'увянувшее,как,окружных'
+    end
+
+  end
+
+
 end

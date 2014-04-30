@@ -24,8 +24,12 @@ class Solver
   end
 
   def level_2(question)
-    find_missing_word(question)
+    words = []
+    question.split("\n").each { |line| words << find_missing_word(line) }
+    words.join(',')
   end
+  alias_method :level_3, :level_2
+  alias_method :level_4, :level_2
 
   def find_missing_word(question)
     regexp = Regexp.new(strip_punctuation(question).gsub("%WORD%","([#{WORD}]+)"))
