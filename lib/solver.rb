@@ -17,9 +17,13 @@ class Solver
 
   def call(env)
     params = JSON.parse(env["rack.input"].read)
+    Thread.new(params) { resolve(params) }
+    [200, {'Content-Type' => 'application/json'}, StringIO.new("Hello World!\n")]
+  end
+
+  def resolve(params)
     answer = self.send("level_#{params["level"]}", params["question"])
     send_answer(answer, params["id"])
-    [200, {'Content-Type' => 'application/json'}, StringIO.new("Hello World!\n")]
   end
 
   def level_1(question)
@@ -46,7 +50,7 @@ class Solver
   end
 
   def send_answer(answer, task_id)
-    5.times do
+    3.times do
       Thread.new(answer, task_id) do |a, tid|
         uri = URI("http://pushkin-contest.ror.by/quiz")
 
