@@ -49,7 +49,10 @@ class Solver
   end
 
   def strip_punctuation(string)
-    string.strip.gsub(/[[:punct:]]\z/, '')
+    spaces = string.gsub(/\A[[:space:]]*/, '').gsub(/[[:space:]]*\z/, '')
+    # Some dirty hacks here
+    spaces += ',' if spaces[-1] == '%'
+    spaces.gsub(/[[:punct:]]{1}\z/, '')
   end
 
   def send_answer(answer, task_id)

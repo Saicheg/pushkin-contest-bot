@@ -30,6 +30,11 @@ describe Solver do
       subject.level_2(question).should == 'сомнительной'
     end
 
+    it 'should solve it' do
+      question  = "     Живые %WORD%"
+      subject.level_2(question).should == 'впечатленья'
+    end
+
   end
 
   describe 'level 3' do
