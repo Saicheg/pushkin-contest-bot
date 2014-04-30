@@ -4,7 +4,7 @@ require 'rest_client'
 
 class Solver
 
-  TOKEN='123'
+  TOKEN='3e81fe7c2ae2be50eb7b034ebb637c10'
   WORD=/А-Яа-яЁё0-9/
 
   def initialize
