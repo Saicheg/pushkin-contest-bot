@@ -11,6 +11,7 @@ class Solver
 
   def initialize
     @poems = JSON.parse(File.read(File.expand_path('../../db/poems.json', __FILE__)))
+    @poem_lines = @poems.values.flatten.map{|line| strip_punctuation(line) }
     @poem_string = @poems.values.flatten.map{|line| strip_punctuation(line) }.join(LINE)
     @poem_names = Hash[@poems.flat_map {|name, lines| lines.map {|line| [strip_punctuation(line), name]  }}]
     RestClient.log = Logger.new($stdout)
@@ -33,10 +34,12 @@ class Solver
   end
 
   def level_2(question)
-    time = Time.now
     regexp = Regexp.new(strip_punctuation(question).gsub("%WORD%","([#{WORD}]+)"))
-    answer = regexp.match(@poem_string)[1]
-    puts Time.now - time
+    answer = regexp.match(@poem_string)[1] rescue nil
+    if answer.nil?
+      @poem_lines.find { |line| line =~ regexp }
+      answer = $1
+    end
     answer
   end
 
