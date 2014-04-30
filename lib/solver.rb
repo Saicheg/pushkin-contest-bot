@@ -11,6 +11,7 @@ class Solver
     @poems = JSON.parse(File.read(File.expand_path('../../db/poems.json', __FILE__)))
     @poem_string = @poems.values.flatten.map{|line| strip_punctuation(line) }.join(LINE)
     @poem_names = Hash[@poems.flat_map {|name, lines| lines.map {|line| [strip_punctuation(line), name]  }}]
+    RestClient.log = Logger.new($stdout)
   end
 
   def call(env)
