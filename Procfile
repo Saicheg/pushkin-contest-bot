@@ -1,1 +1,1 @@
-web: bundle exec rackup -p 80 -s thin -e production config.ru
+web: bundle exec rackup -p $PORT -s thin -E $RACK_ENV config.ru
