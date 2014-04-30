@@ -31,8 +31,11 @@ class Solver
   end
 
   def level_2(question)
+    time = Time.now
     regexp = Regexp.new(strip_punctuation(question).gsub("%WORD%","([#{WORD}]+)"))
-    regexp.match(@poem_string)[1]
+    answer = regexp.match(@poem_string)[1]
+    puts Time.now - time
+    answer
   end
 
   def level_3(question)
@@ -50,16 +53,12 @@ class Solver
   end
 
   def send_answer(answer, task_id)
-    3.times do
-      Thread.new(answer, task_id) do |a, tid|
-        uri = URI("http://pushkin-contest.ror.by/quiz")
+    uri = URI("http://pushkin-contest.ror.by/quiz")
 
-        data = { answer: a, token: TOKEN, task_id: tid }
-        options = {content_type: :json, accept: :json}
+    data = { answer: answer, token: TOKEN, task_id: task_id}
+    options = {content_type: :json, accept: :json}
 
-        RestClient.post uri.to_s, data.to_json, options
-      end
-    end
+    RestClient.post uri.to_s, data.to_json, options
   end
 
 end
