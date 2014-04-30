@@ -5,10 +5,11 @@ class Solver
 
   TOKEN='3e81fe7c2ae2be50eb7b034ebb637c10'
   WORD="А-Яа-яЁё0-9"
+  LINE="%LINE%"
 
   def initialize
     @poems = JSON.parse(File.read(File.expand_path('../../db/poems.json', __FILE__)))
-    @poem_lines = @poems.values.flatten.map{|line| strip_punctuation(line) }
+    @poem_string = @poems.values.flatten.map{|line| strip_punctuation(line) }.join(LINE)
     @poem_names = Hash[@poems.flat_map {|name, lines| lines.map {|line| [strip_punctuation(line), name]  }}]
   end
 
@@ -31,10 +32,19 @@ class Solver
   alias_method :level_3, :level_2
   alias_method :level_4, :level_2
 
-  def find_missing_word(question)
+  def level_2(question)
     regexp = Regexp.new(strip_punctuation(question).gsub("%WORD%","([#{WORD}]+)"))
-    line = @poem_lines.find { |line| line =~ regexp }
-    $1
+    regexp.match(@poem_string)[1]
+  end
+
+  def level_3(question)
+    regexp = Regexp.new(question.split("\n").map{|str| strip_punctuation(str) }.join(LINE).gsub("%WORD%","([#{WORD}]+)"))
+    (regexp.match(@poem_string) || [])[1..2].join(',')
+  end
+
+  def level_4(question)
+    regexp = Regexp.new(question.split("\n").map{|str| strip_punctuation(str) }.join(LINE).gsub("%WORD%","([#{WORD}]+)"))
+    regexp.match(@poem_string)[1..3].join(',')
   end
 
   def strip_punctuation(string)
