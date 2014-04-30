@@ -48,6 +48,14 @@ class Solver
     regexp.match(@poem_string)[1..3].join(',')
   end
 
+  def level_5(question)
+    words = question.scan(/[#{WORD}]+/)
+    regexp = Regexp.new ('(?:' + words.map { |word| question.gsub(word, "([#{WORD}]*)")}.join('|') + ')')
+    answer = regexp.match(@poem_string)[1..-1].to_a
+    index = answer.index {|x| !x.nil?}
+    "#{answer[index]},#{words[index]}"
+  end
+
   def strip_punctuation(string)
     spaces = string.gsub(/\A[[:space:]]*/, '').gsub(/[[:space:]]*\z/, '')
     # Some dirty hacks here
