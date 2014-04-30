@@ -16,7 +16,7 @@ class Solver
   def call(env)
     params = JSON.parse(env["rack.input"].read)
     answer = self.send("level_#{params["level"]}", params["question"])
-    send_answer(answer, params["id"])
+    Thread.new { send_answer(answer, params["id"]) }
     [200, {'Content-Type' => 'application/json'}, StringIO.new("Hello World!\n")]
   end
 
