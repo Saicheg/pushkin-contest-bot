@@ -4,7 +4,7 @@ require 'rest_client'
 class Solver
 
   TOKEN='3e81fe7c2ae2be50eb7b034ebb637c10'
-  WORD=/А-Яа-яЁё0-9/
+  WORD="А-Яа-яЁё0-9"
 
   def initialize
     @poems = JSON.parse(File.read(File.expand_path('../../db/poems.json', __FILE__)))
@@ -21,6 +21,16 @@ class Solver
 
   def level_1(question)
     @poem_names[strip_punctuation(question)] || ""
+  end
+
+  def level_2(question)
+    find_missing_word(question)
+  end
+
+  def find_missing_word(question)
+    regexp = Regexp.new(strip_punctuation(question).gsub("%WORD%","([#{WORD}]+)"))
+    line = @poem_lines.find { |line| line =~ regexp }
+    $1
   end
 
   def strip_punctuation(string)
