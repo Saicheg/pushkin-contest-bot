@@ -1,5 +1,6 @@
 require 'json'
 require 'rest_client'
+require 'logger'
 
 class Solver
 
