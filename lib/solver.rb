@@ -1,19 +1,58 @@
 require 'json'
 require 'logger'
 require 'retryable'
+require 'active_support/json'
+require 'active_support/core_ext/module/delegation'
+require 'active_support/core_ext/string'
+require 'active_support/core_ext/array'
+require 'active_support/multibyte/chars'
 
 class Solver
 
   TOKEN='3e81fe7c2ae2be50eb7b034ebb637c10'
   WORD="А-Яа-яЁё0-9"
-  LINE="%LINE%"
+  LINE="%%"
   ADDR=URI("http://pushkin-contest.ror.by/")
 
   def initialize
-    @poems = JSON.parse(File.read(File.expand_path('../../db/poems-full.json', __FILE__)))
-    @poem_lines = @poems.map {|name, lines| lines }.flatten.map{|line| strip_punctuation(line) }
-    @poem_string = @poems.map {|name, lines| lines }.flatten.map{|line| strip_punctuation(line) }.join(LINE)
-    @poem_names = Hash[@poems.flat_map {|name, lines| lines.map {|line| [strip_punctuation(line), name]  }}]
+    poems = JSON.parse(File.read(File.expand_path('../../db/poems-full.json', __FILE__)))
+    @poem_names = Hash[poems.flat_map {|name, lines| lines.map {|line| [normalize(line), name]  }}]
+
+    all_lines = poems.map {|name, lines| lines }.flatten.map{|line| normalize(line) }
+
+    @level_2 = {}
+
+    all_lines.each do |line|
+      words = line.split(/\s+/).map {|word| normalize(word)}
+      words.each {|word| @level_2[line.sub(word, '%word%')] = word }
+    end
+
+    @level_3 = {}
+
+    0.upto(all_lines.length-1) do |i|
+      first, last = all_lines[i], all_lines[i+1]
+
+      next if first.nil? || last.nil?
+
+      first_arr = []
+      words = first.split(/\s+/).map {|word| normalize(word)}
+      words.each {|word| first_arr << [first.sub(word, '%word%'), word] }
+
+      last_arr = []
+      words = last.split(/\s+/).map {|word| normalize(word)}
+      words.each {|word| last_arr << [last.sub(word, '%word%'), word] }
+
+      first_arr.each do |first_line, first_word|
+        last_arr.each do |last_line, last_word|
+          question = "#{first_line}\n#{last_line}"
+          answer = "#{first_word},#{last_word}"
+          @level_3[question] = answer
+        end
+      end
+    end
+
+    @poem_string = poems.map {|name, lines| lines }.flatten.map{|line| normalize(line) }.join(LINE)
+
     @http = Net::HTTP.new(ADDR.host)
     @http.set_debug_output $stdout
   end
@@ -30,37 +69,38 @@ class Solver
   end
 
   def level_1(question)
-    @poem_names[strip_punctuation(question)] || ""
+    @poem_names[normalize(question)] || ""
   end
 
   def level_2(question)
-    regexp = Regexp.new(strip_punctuation(question).gsub("%WORD%","([#{WORD}]+)"))
-    regexp.match(@poem_string)[1] rescue nil
+    normalized = normalize(question)
+    @level_2[normalized]
   end
 
   def level_3(question)
-    regexp = Regexp.new(question.split("\n").map{|str| strip_punctuation(str) }.join(LINE).gsub("%WORD%","([#{WORD}]+)"))
-    (regexp.match(@poem_string) || [])[1..2].join(',')
+    normalized = question.split("\n").map {|line| normalize(line) }.join("\n")
+    @level_3[normalized]
   end
 
   def level_4(question)
-    regexp = Regexp.new(question.split("\n").map{|str| strip_punctuation(str) }.join(LINE).gsub("%WORD%","([#{WORD}]+)"))
+    regexp = Regexp.new(question.split("\n").map{|str| normalize(str) }.join(LINE).gsub("%word%","([#{WORD}]+)"))
     regexp.match(@poem_string)[1..3].join(',')
   end
 
   def level_5(question)
-    words = question.scan(/[#{WORD}]+/)
-    regexp = Regexp.new ('(?:' + words.map { |word| question.gsub(word, "([#{WORD}]*)")}.join('|') + ')')
-    answer = regexp.match(@poem_string)[1..-1].to_a
-    index = answer.index {|x| !x.nil?}
+    normalized = normalize(question)
+    words = normalized.scan(/[#{WORD}]+/)
+    regexp = Regexp.new words.map { |word| normalized.gsub(word, "([#{WORD}]+)")}.join('|')
+    binding.pry
+    answer = @poem_string.scan(regexp).last[1..-1]
+    index = index = answer.index {|x| !x.nil?}
     "#{answer[index]},#{words[index]}"
   end
 
-  def strip_punctuation(string)
-    spaces = string.gsub(/\A[[:space:]]*/, '').gsub(/[[:space:]]*\z/, '')
-    # Some dirty hacks here
-    spaces += ',' if spaces[-1] == '%'
-    spaces.gsub(/[[:punct:]]{1}\z/, '')
+  def normalize(string)
+    downcase = string.mb_chars.downcase
+    spaces = downcase.gsub(/\A[[:space:]]*/, '').gsub(/[[:space:]]*\z/, '')
+    spaces.gsub(/[\.\,\!\:\;]+\z/, '').to_s
   end
 
   def send_answer(answer, task_id)
