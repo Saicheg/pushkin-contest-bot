@@ -90,10 +90,10 @@ class Solver
   def level_5(question)
     normalized = normalize(question)
     words = normalized.scan(/[#{WORD}]+/)
-    regexp = Regexp.new words.map { |word| normalized.sub(word, "([#{WORD}]+)")}.join('|')
-    answer = regexp.match(@poem_string)[1..-1]
-    index = index = answer.index {|x| !x.nil?}
-    "#{answer[index]},#{words[index]}"
+    strings = words.map {|word| normalized.sub(word, "%word%") }
+    answers = strings.map {|string| @level_2[string]}
+    index = answers.index {|x| !x.nil?}
+    "#{answers[index]},#{words[index]}"
   end
 
   def normalize(string)
