@@ -90,9 +90,8 @@ class Solver
   def level_5(question)
     normalized = normalize(question)
     words = normalized.scan(/[#{WORD}]+/)
-    regexp = Regexp.new words.map { |word| normalized.gsub(word, "([#{WORD}]+)")}.join('|')
-    binding.pry
-    answer = @poem_string.scan(regexp).last[1..-1]
+    regexp = Regexp.new words.map { |word| normalized.sub(word, "([#{WORD}]+)")}.join('|')
+    answer = regexp.match(@poem_string)[1..-1]
     index = index = answer.index {|x| !x.nil?}
     "#{answer[index]},#{words[index]}"
   end
@@ -100,7 +99,7 @@ class Solver
   def normalize(string)
     downcase = string.mb_chars.downcase
     spaces = downcase.gsub(/\A[[:space:]]*/, '').gsub(/[[:space:]]*\z/, '')
-    spaces.gsub(/[\.\,\!\:\;]+\z/, '').to_s
+    spaces.gsub(/[\.\,\!\:\;\?]+\z/, '').to_s
   end
 
   def send_answer(answer, task_id)
