@@ -54,7 +54,7 @@ class Solver
     @poem_string = poems.map {|name, lines| lines }.flatten.map{|line| normalize(line) }.join(LINE)
 
     @http = Net::HTTP.new(ADDR.host)
-    @http.set_debug_output $stdout
+    # @http.set_debug_output $stdout
   end
 
   def call(env)

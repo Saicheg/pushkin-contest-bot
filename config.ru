@@ -1,4 +1,4 @@
 require_relative 'lib/solver'
 
-$stdout.sync = true
+# $stdout.sync = true
 run Solver.new
