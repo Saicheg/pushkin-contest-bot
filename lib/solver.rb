@@ -27,34 +27,9 @@ class Solver
       words.each {|word| @level_2[line.sub(word, '%word%')] = word }
     end
 
-    @level_3 = {}
-
-    0.upto(all_lines.length-1) do |i|
-      first, last = all_lines[i], all_lines[i+1]
-
-      next if first.nil? || last.nil?
-
-      first_arr = []
-      words = first.split(/\s+/).map {|word| normalize(word)}
-      words.each {|word| first_arr << [first.sub(word, '%word%'), word] }
-
-      last_arr = []
-      words = last.split(/\s+/).map {|word| normalize(word)}
-      words.each {|word| last_arr << [last.sub(word, '%word%'), word] }
-
-      first_arr.each do |first_line, first_word|
-        last_arr.each do |last_line, last_word|
-          question = "#{first_line}\n#{last_line}"
-          answer = "#{first_word},#{last_word}"
-          @level_3[question] = answer
-        end
-      end
-    end
-
     @poem_string = poems.map {|name, lines| lines }.flatten.map{|line| normalize(line) }.join(LINE)
 
     @http = Net::HTTP.new(ADDR.host)
-    # @http.set_debug_output $stdout
   end
 
   def call(env)
@@ -78,13 +53,11 @@ class Solver
   end
 
   def level_3(question)
-    normalized = question.split("\n").map {|line| normalize(line) }.join("\n")
-    @level_3[normalized]
+    question.split("\n").map {|line| @level_2[normalize(line)] }.join(',')
   end
 
   def level_4(question)
-    regexp = Regexp.new(question.split("\n").map{|str| normalize(str) }.join(LINE).gsub("%word%","([#{WORD}]+)"))
-    regexp.match(@poem_string)[1..3].join(',')
+    question.split("\n").map {|line| @level_2[normalize(line)] }.join(',')
   end
 
   def level_5(question)
