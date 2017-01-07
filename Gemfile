@@ -1,11 +1,12 @@
 source 'https://rubygems.org'
 
-ruby '2.1.1'
+ruby '2.4.0'
 
 gem 'rack'
-gem 'thin'
+gem 'thin', '~> 1.7.0'
 gem 'retryable', '~> 1.3.5'
-gem 'activesupport'
+gem 'activesupport', '~> 5.0.1'
+gem 'json', '~> 2.0.2'
 
 group :development do
   gem 'pry'
